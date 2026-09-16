@@ -46,24 +46,22 @@ jobs:
         pip install --upgrade pip
         pip install cython==0.29.36 buildozer
 
-    - name: Accept Android Licenses and Set Java Path
-      run: |
-        # Set JAVA_HOME explicitly so Buildozer finds it
-        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
-        
-        # यह नई लाइन आपके buildozer.spec में लाइसेंस को खुद-ब-खुद Yes कर देगी
-        sed -i '/\[app\]/a android.accept_sdk_license = True' buildozer.spec
-        
     - name: Build with Buildozer
       run: |
+        # 1. Setting correct Java path
         export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
+        
+        # 2. Clearing GitHub's conflicting NDK paths
         export ANDROID_NDK_HOME=""
         export ANDROID_NDK_ROOT=""
         export ANDROID_NDK_LATEST_HOME=""
         export ANDROID_NDK=""
         
-        # Running normally without the 'yes |' pipe which caused the crash
-        buildozer -v android debug
+        # 3. Forcing License Acceptance directly into spec file
+        echo "android.accept_sdk_license = True" >> buildozer.spec
+        
+        # 4. Running with 'yes |' restored so no prompt can stop it
+        yes | buildozer -v android debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
