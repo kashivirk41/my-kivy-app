@@ -19,7 +19,7 @@ source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
 # (list) Application requirements
-# यहाँ से हमने वर्जन नंबर हटा दिया है ताकि बुलडोजर बिना किसी एरर के इसे खुद उठा ले
+# यहाँ हमने सिर्फ python3 और kivy रखा है ताकि कोई वर्जन मैचिंग का एरर न आए
 requirements = python3,kivy
 
 # (list) Permissions
