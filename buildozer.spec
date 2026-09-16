@@ -19,8 +19,8 @@ source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
 
 # (list) Application requirements
-# यहाँ हमने kivy का बिल्कुल स्टेबल और टेस्टेड वर्जन 2.2.1 फिक्स कर दिया है ताकि pip कोई ढूंढने में गलती न करे
-requirements = python3,kivy==2.2.1
+# यहाँ से हमने वर्जन नंबर हटा दिया है ताकि बुलडोजर बिना किसी एरर के इसे खुद उठा ले
+requirements = python3,kivy
 
 # (list) Permissions
 android.permissions = INTERNET
