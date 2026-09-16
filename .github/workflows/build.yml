@@ -33,7 +33,13 @@ jobs:
           libswscale-dev \
           libavformat-dev \
           libavcodec-dev \
-          zlib1g-dev
+          zlib1g-dev \
+          autoconf \
+          automake \
+          libtool \
+          libtool-bin \
+          m4 \
+          pkg-config
 
     - name: Install Buildozer and Cython
       run: |
