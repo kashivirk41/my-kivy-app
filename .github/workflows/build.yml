@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build with Buildozer
+      uses: kivy/buildozer-action@v0.2.3
+      with:
+        filename: buildozer.spec
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: package
+        path: bin/*.apk
