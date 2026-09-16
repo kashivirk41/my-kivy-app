@@ -51,8 +51,8 @@ jobs:
         # Set JAVA_HOME explicitly so Buildozer finds it
         export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
         
-        # Accept SDK license explicitly to avoid 'Aidl not found' and 'Broken pipe'
-        sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
+        # यह नई लाइन आपके buildozer.spec में लाइसेंस को खुद-ब-खुद Yes कर देगी
+        sed -i '/\[app\]/a android.accept_sdk_license = True' buildozer.spec
         
     - name: Build with Buildozer
       run: |
