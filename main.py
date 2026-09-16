@@ -1,0 +1,17 @@
+from kivy.app import App
+from kivy.uix.button import Button
+from kivy.uix.boxlayout import BoxLayout
+
+class SimpleApp(App):
+    def build(self):
+        layout = BoxLayout(orientation='vertical')
+        self.btn = Button(text='Click Me', font_size=32)
+        self.btn.bind(on_press=self.on_click)
+        layout.add_widget(self.btn)
+        return layout
+
+    def on_click(self, instance):
+        self.btn.text = 'Button Clicked!'
+
+if __name__ == '__main__':
+    SimpleApp().run()
