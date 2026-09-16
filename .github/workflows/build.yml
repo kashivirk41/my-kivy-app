@@ -6,7 +6,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # हमने इसे 22.04 पर सेट किया है ताकि पुराने NDK (r25b) के साथ कोई लाइब्रेरी क्रैश न हो
+    runs-on: ubuntu-22.04 
 
     steps:
     - uses: actions/checkout@v4
@@ -16,54 +17,61 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Install dependencies
+    - name: 1. Clean GitHub Pre-installed Android (To stop ALL conflicts)
       run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          python3-pip \
-          build-essential \
-          git \
-          python3-dev \
-          ffmpeg \
-          libsdl2-dev \
-          libsdl2-image-dev \
-          libsdl2-mixer-dev \
-          libsdl2-ttf-dev \
-          libportmidi-dev \
-          libswscale-dev \
-          libavformat-dev \
-          libavcodec-dev \
-          zlib1g-dev \
-          autoconf \
-          automake \
-          libtool \
-          libtool-bin \
-          m4 \
-          pkg-config
+        sudo rm -rf /usr/local/lib/android || true
+        sudo rm -rf /opt/android || true
 
-    - name: Install Buildozer and Cython
+    - name: 2. Install ALL Required Dependencies (Saying YES to everything)
+      env:
+        DEBIAN_FRONTEND: noninteractive
       run: |
-        pip install --upgrade pip
-        pip install cython==0.29.36 buildozer
+        sudo apt-get update -y
+        # यहाँ हम वो तमाम लाइब्रेरियां इंस्टॉल कर रहे हैं जिनकी बिल्डोजर को कभी भी जरूरत पड़ सकती है (-y के साथ)
+        sudo apt-get install -y --no-install-recommends \
+          python3-pip build-essential git python3-dev \
+          ffmpeg libsdl2-dev libsdl2-image-dev \
+          libsdl2-mixer-dev libsdl2-ttf-dev \
+          libportmidi-dev libswscale-dev \
+          libavformat-dev libavcodec-dev \
+          zlib1g-dev autoconf automake \
+          libtool libtool-bin m4 pkg-config \
+          unzip zip openjdk-17-jdk \
+          libffi-dev xclip xsel cmake
 
-    - name: Build with Buildozer
+    - name: 3. Install Python Libraries (Buildozer, Cython)
       run: |
-        # 1. Setting correct Java path
-        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
+        python -m pip install --upgrade pip
+        pip install cython==0.29.36 buildozer virtualenv
+
+    - name: 4. Force Android License Acceptance in buildozer.spec
+      run: |
+        # यह कमांड आपकी .spec फाइल में हर तरह के लाइसेंस को पक्के तौर पर True कर देगी
+        sed -i 's/android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
+        echo "android.accept_sdk_license = True" >> buildozer.spec
+
+    - name: 5. Build APK with Auto-Yes and Ultimate Error Handling
+      run: |
+        # जावा का पक्का और सही रास्ता
+        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
         
-        # 2. Clearing GitHub's conflicting NDK paths
+        # गिटहब के पुराने और खराब NDK रास्तों को बिल्कुल खत्म करना
         export ANDROID_NDK_HOME=""
         export ANDROID_NDK_ROOT=""
         export ANDROID_NDK_LATEST_HOME=""
         export ANDROID_NDK=""
+        export ANDROID_HOME=""
         
-        # 3. Forcing License Acceptance directly into spec file
-        echo "android.accept_sdk_license = True" >> buildozer.spec
+        # यह सबसे जरूरी कमांड है! यह Broken pipe के एरर को बाईपास कर देगी
+        set +o pipefail
         
-        # 4. Running with 'yes |' restored so no prompt can stop it
+        # अब यह 'yes' लगातार बोलता रहेगा और बिल्डोजर कोई परमिशन नहीं मांगेगा
         yes | buildozer -v android debug
+        
+        # पाइपलाइन को वापस नॉर्मल करना
+        set -o pipefail
 
-    - name: Upload APK
+    - name: 6. Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: package
